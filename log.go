@@ -15,12 +15,12 @@ func (c *Logger) Set(instance interface{}) {
 }
 
 type LoggerInterface interface {
-	Error(...interface{})
-	Debug(...interface{})
-	Fatal(...interface{})
-	Panic(...interface{})
-	Warn(...interface{})
-	Info(...interface{})
+	Error(string, ...interface{})
+	Debug(string, ...interface{})
+	Fatal(string, ...interface{})
+	Panic(string, ...interface{})
+	Warn(string, ...interface{})
+	Info(string, ...interface{})
 }
 
 func init() {
@@ -29,54 +29,54 @@ func init() {
 	}
 }
 
-func (c *Logger) Error(v ...interface{}) {
-	c.instance.(LoggerInterface).Error(v...)
+func (c *Logger) Error(format string, v ...interface{}) {
+	c.instance.(LoggerInterface).Error(format, v...)
 }
 
-func (c *Logger) Debug(v ...interface{}) {
-	c.instance.(LoggerInterface).Debug(v...)
+func (c *Logger) Debug(format string, v ...interface{}) {
+	c.instance.(LoggerInterface).Debug(format, v...)
 }
 
-func (c *Logger) Info(v ...interface{}) {
-	c.instance.(LoggerInterface).Info(v...)
+func (c *Logger) Info(format string, v ...interface{}) {
+	c.instance.(LoggerInterface).Info(format, v...)
 }
 
-func (c *Logger) Warn(v ...interface{}) {
-	c.instance.(LoggerInterface).Warn(v...)
+func (c *Logger) Warn(format string, v ...interface{}) {
+	c.instance.(LoggerInterface).Warn(format, v...)
 }
 
-func (c *Logger) Panic(v ...interface{}) {
-	c.instance.(LoggerInterface).Panic(v...)
+func (c *Logger) Panic(format string, v ...interface{}) {
+	c.instance.(LoggerInterface).Panic(format, v...)
 }
 
-func (c *Logger) Fatal(v ...interface{}) {
-	c.instance.(LoggerInterface).Fatal(v...)
+func (c *Logger) Fatal(format string, v ...interface{}) {
+	c.instance.(LoggerInterface).Fatal(format, v...)
 }
 
 type DefaultLog struct {
 	LoggerInterface
 }
 
-func (c *DefaultLog) Error(v ...interface{}) {
-	log.Println(append([]interface{}{"Error"}, v...))
+func (c *DefaultLog) Error(format string, v ...interface{}) {
+	log.Println("ERROR", format, v...)
 }
 
-func (c *DefaultLog) Debug(v ...interface{}) {
-	log.Println(append([]interface{}{"Debug"}, v...))
+func (c *DefaultLog) Debug(format string, v ...interface{}) {
+	log.Println("DEBUG", format, v...)
 }
 
-func (c *DefaultLog) Warn(v ...interface{}) {
-	log.Println(append([]interface{}{"Warn"}, v...))
+func (c *DefaultLog) Warn(format string, v ...interface{}) {
+	log.Println("WARN", format, v...)
 }
 
-func (c *DefaultLog) Info(v ...interface{}) {
-	log.Println(append([]interface{}{"Info"}, v...))
+func (c *DefaultLog) Info(format string, v ...interface{}) {
+	log.Println("INFO", format, v...)
 }
 
-func (c *DefaultLog) Fatal(v ...interface{}) {
-	log.Fatal(v...)
+func (c *DefaultLog) Fatal(format string, v ...interface{}) {
+	log.Fatal(format, v...)
 }
 
-func (c *DefaultLog) Panic(v ...interface{}) {
-	log.Panic(v...)
+func (c *DefaultLog) Panic(format string, v ...interface{}) {
+	log.Panic(format, v...)
 }

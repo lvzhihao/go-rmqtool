@@ -57,26 +57,31 @@ type DefaultLog struct {
 	LoggerInterface
 }
 
+func (c *DefaultLog) println(t, format string, v ...interface{}) {
+	list := append([]interface{}{t}, format)
+	log.Println(append(list, v))
+}
+
 func (c *DefaultLog) Error(format string, v ...interface{}) {
-	log.Println("ERROR", format, v...)
+	c.println("ERROR", format, v...)
 }
 
 func (c *DefaultLog) Debug(format string, v ...interface{}) {
-	log.Println("DEBUG", format, v...)
+	c.println("DEBUG", format, v...)
 }
 
 func (c *DefaultLog) Warn(format string, v ...interface{}) {
-	log.Println("WARN", format, v...)
+	c.println("WARN", format, v...)
 }
 
 func (c *DefaultLog) Info(format string, v ...interface{}) {
-	log.Println("INFO", format, v...)
+	c.println("INFO", format, v...)
 }
 
 func (c *DefaultLog) Fatal(format string, v ...interface{}) {
-	log.Fatal(format, v...)
+	log.Fatal(append([]interface{}{format}, v...))
 }
 
 func (c *DefaultLog) Panic(format string, v ...interface{}) {
-	log.Panic(format, v...)
+	log.Panic(append([]interface{}{format}, v...))
 }

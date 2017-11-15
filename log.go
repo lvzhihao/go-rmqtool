@@ -59,7 +59,7 @@ type DefaultLog struct {
 
 func (c *DefaultLog) println(t, format string, v ...interface{}) {
 	list := append([]interface{}{t}, format)
-	log.Println(append(list, v))
+	log.Println(append(list, v...)...)
 }
 
 func (c *DefaultLog) Error(format string, v ...interface{}) {
@@ -79,9 +79,9 @@ func (c *DefaultLog) Info(format string, v ...interface{}) {
 }
 
 func (c *DefaultLog) Fatal(format string, v ...interface{}) {
-	log.Fatal(append([]interface{}{format}, v...))
+	log.Fatal(append([]interface{}{format}, v...)...)
 }
 
 func (c *DefaultLog) Panic(format string, v ...interface{}) {
-	log.Panic(append([]interface{}{format}, v...))
+	log.Panic(append([]interface{}{format}, v...)...)
 }

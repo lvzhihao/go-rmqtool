@@ -10,6 +10,10 @@ type Logger struct {
 	instance interface{}
 }
 
+func (c *Logger) Set(instance interface{}) {
+	c.instance = instance
+}
+
 type LoggerInterface interface {
 	Error(...interface{})
 	Debug(...interface{})

@@ -7,12 +7,12 @@ import (
 )
 
 type ConnectConfig struct {
-	Host     string                 `yaml:"host"`
-	Api      string                 `yaml:"api"`
-	User     string                 `yaml:"user"`
-	Passwd   string                 `yaml:"passwd"`
-	Vhost    string                 `yaml:"vhost"`
-	MetaData map[string]interface{} `yaml:"metadata"`
+	Host     string                 `json:"host" yaml:"host"`         //127.0.0.1:5672
+	Api      string                 `json:"api" yaml:"api"`           //http://127.0.0.1:15672
+	User     string                 `json:"user" yaml:"user"`         //username
+	Passwd   string                 `json:"passwd" yaml:"passwd"`     //passwd
+	Vhost    string                 `json:"vhost" yaml:"vhost"`       //vhost
+	MetaData map[string]interface{} `json:"metadata" yaml:"metadata"` //metadata
 }
 
 func (c *ConnectConfig) Scheme() string {
@@ -62,7 +62,7 @@ func (c *Connect) Dial() (*amqp.Connection, error) {
 }
 
 func (c *Connect) CreateExchange(exchange string) error {
-	return CreateExchange(c.Api(), c.User(), c.Passwd(), c.Vhost(), exchange)
+	return APICreateExchange(c.Api(), c.User(), c.Passwd(), c.Vhost(), exchange, nil)
 }
 
 func (c *Connect) ApplyQueue(name string) *Queue {

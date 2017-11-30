@@ -77,12 +77,13 @@ func (c *Queue) Ensure(bindList []*QueueBind) error {
 }
 
 func (c *Queue) Create() error {
-	return CreateQueue(
+	return APICreateQueue(
 		c.Api(),
 		c.User(),
 		c.Passwd(),
 		c.Vhost(),
 		c.Name(),
+		nil,
 	)
 }
 
@@ -92,7 +93,7 @@ func (c *Queue) Close() {
 
 func (c *Queue) Bind(bindList []*QueueBind) error {
 	for _, bind := range bindList {
-		err := BindRoutingKey(
+		err := APIBindingsRoutingKey(
 			c.Api(),
 			c.User(),
 			c.Passwd(),

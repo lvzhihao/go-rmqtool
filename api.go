@@ -104,7 +104,11 @@ func (c *APIClient) buffer(data interface{}) (*bytes.Buffer, error) {
 		if err != nil {
 			return nil, err
 		}
-		buffer = bytes.NewBuffer(b)
+		if bytes.Compare(b, []byte("null")) == 0 {
+			buffer = bytes.NewBufferString("{}")
+		} else {
+			buffer = bytes.NewBuffer(b)
+		}
 	}
 	return buffer, nil
 }
@@ -191,8 +195,7 @@ func (c *APIClient) readSlice(paths interface{}) ([]map[string]interface{}, erro
 	return c.ScanSlice(resp, err)
 }
 
-func (c *APIClient) create(paths interface{}, data interface{}) error {
-	resp, err := c.PUT(paths, data)
+func (c *APIClient) ScanCreate(resp *http.Response, err error) error {
 	if err != nil {
 		return err
 	} else if (resp.StatusCode == http.StatusNoContent) || (resp.StatusCode == http.StatusCreated) {
@@ -204,9 +207,12 @@ func (c *APIClient) create(paths interface{}, data interface{}) error {
 	}
 }
 
-func (c *APIClient) update(paths interface{}, data interface{}) error {
-	// ensure binding
-	resp, err := c.POST(paths, data)
+func (c *APIClient) create(paths interface{}, data interface{}) error {
+	resp, err := c.PUT(paths, data)
+	return c.ScanCreate(resp, err)
+}
+
+func (c *APIClient) ScanUpdate(resp *http.Response, err error) error {
 	if err != nil {
 		return err
 	}
@@ -216,6 +222,11 @@ func (c *APIClient) update(paths interface{}, data interface{}) error {
 	} else {
 		return fmt.Errorf("API Response Status Error: %d, %v", resp.StatusCode, resp)
 	}
+}
+
+func (c *APIClient) update(paths interface{}, data interface{}) error {
+	resp, err := c.POST(paths, data)
+	return c.ScanUpdate(resp, err)
 }
 
 func (c *APIClient) ScanDelete(resp *http.Response, err error) error {
@@ -239,55 +250,6 @@ func (c *APIClient) Check() error {
 	return err
 }
 
-func (c *APIClient) ListQueues(vhost string) ([]map[string]interface{}, error) {
-	if vhost == "" {
-		return c.readSlice("/queues")
-	} else {
-		return c.readSlice([]string{"queues", vhost})
-	}
-}
-
-func (c *APIClient) CreateQueue(vhost, name string, params map[string]interface{}) error {
-	// `{"auto_delete":false, "durable":true, "arguments":[]}`
-	return c.create([]string{"queues", vhost, name}, params)
-}
-
-func (c *APIClient) DeleteQueue(vhost, name string) error {
-	return c.delete([]string{"queues", vhost, name})
-}
-
-func (c *APIClient) PurgeQueue(vhost, name string) error {
-	return c.delete([]string{"queues", vhost, name, "contents"})
-}
-
-func (c *APIClient) BindingsRoutingKey(vhost, name, exchange, key string, args map[string]interface{}) error {
-	params := map[string]interface{}{
-		"routing_key": key,
-		"arguments":   args,
-	}
-	return c.update([]string{"bindings", vhost, "e", exchange, "q", name}, params)
-}
-
-func APIListQueues(api, user, passwd, vhost string) ([]map[string]interface{}, error) {
-	return NewAPIClient(api, user, passwd).ListQueues(vhost)
-}
-
-func APICreateQueue(api, user, passwd, vhost, name string, params map[string]interface{}) error {
-	return NewAPIClient(api, user, passwd).CreateQueue(vhost, name, params)
-}
-
-func APIDeleteQueue(api, user, passwd, vhost, name string) error {
-	return NewAPIClient(api, user, passwd).DeleteQueue(vhost, name)
-}
-
-func APIPurgeQueue(api, user, passwd, vhost, name string) error {
-	return NewAPIClient(api, user, passwd).PurgeQueue(vhost, name)
-}
-
-func APIBindingsRoutingKey(api, user, passwd, vhost, name, exchange, key string, args map[string]interface{}) error {
-	return NewAPIClient(api, user, passwd).BindingsRoutingKey(vhost, name, exchange, key, args)
-}
-
 func RegisterQueue(api, user, passwd, vhost, name, exchange string, keys []string) error {
 	err := APICreateQueue(api, user, passwd, vhost, name, nil)
 	if err != nil {
@@ -295,7 +257,7 @@ func RegisterQueue(api, user, passwd, vhost, name, exchange string, keys []strin
 	}
 	for _, key := range keys {
 		if exchange != "" && key != "" {
-			err := APIBindingsRoutingKey(api, user, passwd, vhost, name, exchange, key, nil)
+			_, err := APIQueueCreateBinding(api, user, passwd, vhost, exchange, name, key, nil)
 			if err != nil {
 				return err
 			}

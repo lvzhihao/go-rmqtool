@@ -93,13 +93,13 @@ func (c *Queue) Close() {
 
 func (c *Queue) Bind(bindList []*QueueBind) error {
 	for _, bind := range bindList {
-		err := APIBindingsRoutingKey(
+		_, err := APIQueueCreateBinding(
 			c.Api(),
 			c.User(),
 			c.Passwd(),
 			c.Vhost(),
-			c.Name(),
 			bind.Exchange,
+			c.Name(),
 			bind.Key,
 			bind.Arguments,
 		)

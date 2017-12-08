@@ -257,7 +257,7 @@ func RegisterQueue(api, user, passwd, vhost, name, exchange string, keys []strin
 	}
 	for _, key := range keys {
 		if exchange != "" && key != "" {
-			_, err := APIQueueCreateBinding(api, user, passwd, vhost, exchange, name, key, nil)
+			_, err := APIQueueCreateExchangeBinding(api, user, passwd, vhost, exchange, name, key, nil)
 			if err != nil {
 				return err
 			}

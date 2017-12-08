@@ -72,16 +72,16 @@ func (c *APIClient) QueueBindings(vhost, name string) ([]map[string]interface{},
 	return c.readSlice([]string{"queues", vhost, name, "bindings"})
 }
 
+func APIQueueBindings(api, user, passwd, vhost, name string) ([]map[string]interface{}, error) {
+	return NewAPIClient(api, user, passwd).QueueBindings(vhost, name)
+}
+
 func (c *APIClient) QueueExchangeBindings(vhost, exchange, name string) ([]map[string]interface{}, error) {
 	return c.readSlice([]string{"bindings", vhost, "e", exchange, "q", name})
 }
 
 func APIQueueExchangeBindings(api, user, passwd, vhost, exchange, name string) ([]map[string]interface{}, error) {
 	return NewAPIClient(api, user, passwd).QueueExchangeBindings(vhost, exchange, name)
-}
-
-func APIQueueBindings(api, user, passwd, vhost, name string) ([]map[string]interface{}, error) {
-	return NewAPIClient(api, user, passwd).QueueBindings(vhost, name)
 }
 
 func (c *APIClient) QueueMessages(vhost, name string, params map[string]interface{}) ([]map[string]interface{}, error) {
@@ -93,7 +93,7 @@ func APIQueueMessages(api, user, passwd, vhost, name string, params map[string]i
 	return NewAPIClient(api, user, passwd).QueueMessages(vhost, name, params)
 }
 
-func (c *APIClient) QueueCreateBinding(vhost, exchange, name, key string, args map[string]interface{}) (string, error) {
+func (c *APIClient) QueueCreateExchangeBinding(vhost, exchange, name, key string, args map[string]interface{}) (string, error) {
 	params := make(map[string]interface{}, 0)
 	if key != "" {
 		params["routing_key"] = key
@@ -113,8 +113,24 @@ func (c *APIClient) QueueCreateBinding(vhost, exchange, name, key string, args m
 
 }
 
-func APIQueueCreateBinding(api, user, passwd, vhost, exchange, name, key string, args map[string]interface{}) (string, error) {
-	return NewAPIClient(api, user, passwd).QueueCreateBinding(vhost, exchange, name, key, args)
+func APIQueueCreateExchangeBinding(api, user, passwd, vhost, exchange, name, key string, args map[string]interface{}) (string, error) {
+	return NewAPIClient(api, user, passwd).QueueCreateExchangeBinding(vhost, exchange, name, key, args)
+}
+
+func (c *APIClient) QueueExchangeBinding(vhost, exchange, name, props string) (map[string]interface{}, error) {
+	return c.readMap([]string{"bindings", vhost, "e", exchange, "q", name, props})
+}
+
+func APIQueueExchangeBinding(api, user, passwd, vhost, exchange, name, props string) (map[string]interface{}, error) {
+	return NewAPIClient(api, user, passwd).QueueExchangeBinding(vhost, exchange, name, props)
+}
+
+func (c *APIClient) QueueDeleteExchangeBinding(vhost, exchange, name, props string) error {
+	return c.delete([]string{"bindings", vhost, "e", exchange, "q", name, props})
+}
+
+func APIQueueDeleteExchangeBinding(api, user, passwd, vhost, exchange, name, props string) error {
+	return NewAPIClient(api, user, passwd).QueueDeleteExchangeBinding(vhost, exchange, name, props)
 }
 
 func (c *APIClient) Bindings(vhost string) ([]map[string]interface{}, error) {

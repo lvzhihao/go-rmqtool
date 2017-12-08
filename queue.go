@@ -93,7 +93,7 @@ func (c *Queue) Close() {
 
 func (c *Queue) Bind(bindList []*QueueBind) error {
 	for _, bind := range bindList {
-		_, err := APIQueueCreateBinding(
+		_, err := APIQueueCreateExchangeBinding(
 			c.Api(),
 			c.User(),
 			c.Passwd(),

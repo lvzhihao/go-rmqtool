@@ -49,10 +49,38 @@ func TestAPIBindings(t *testing.T) {
 	} else {
 		t.Log("Create Test Exchange Success: ", testName)
 	}
-	ret, err := GenerateTestClient().QueueCreateBinding("/", "amq.topic", testName, "aaab", nil)
+	ret, err := GenerateTestClient().QueueCreateExchangeBinding("/", "amq.topic", testName, "aaab", map[string]interface{}{
+		"abcdefg": "xx",
+	})
 	if err != nil {
 		t.Fatal(err)
 	} else {
 		t.Log("Binding Key Success: ", ret)
+	}
+	bindings, err := GenerateTestClient().QueueExchangeBindings("/", "amq.topic", testName)
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log("Binding Lists: ", bindings)
+	}
+	for _, binding := range bindings {
+		props, err := GenerateTestClient().QueueExchangeBinding("/", "amq.topic", testName, binding["properties_key"].(string))
+		if err != nil {
+			t.Fatal(err)
+		} else {
+			t.Log("Get Props Success: ", props)
+		}
+		err = GenerateTestClient().QueueDeleteExchangeBinding("/", "amq.topic", testName, binding["properties_key"].(string))
+		if err != nil {
+			t.Fatal(err)
+		} else {
+			t.Log("Delete Props Success: ", props)
+		}
+	}
+	err = GenerateTestClient().DeleteQueue("/", testName)
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log("Delete Test Queue Success")
 	}
 }

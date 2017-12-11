@@ -204,3 +204,11 @@ func (c *APIClient) ListGlobalParameters() ([]map[string]interface{}, error) {
 func APIListGlobalParameters(api, user, passwd string) ([]map[string]interface{}, error) {
 	return NewAPIClient(api, user, passwd).ListGlobalParameters()
 }
+
+func (c *APIClient) AlivenessTest(vhost string) (map[string]interface{}, error) {
+	return c.readMap([]string{"aliveness-test", vhost})
+}
+
+func APIAlivenessTest(api, user, passwd, vhost string) (map[string]interface{}, error) {
+	return NewAPIClient(api, user, passwd).AlivenessTest(vhost)
+}

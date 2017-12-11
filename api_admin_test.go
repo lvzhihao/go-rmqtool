@@ -198,3 +198,12 @@ func TestParameter(t *testing.T) {
 		t.Log("Parameters List: ", list)
 	}
 }
+
+func TestAPIAlivenessTest(t *testing.T) {
+	ret, err := GenerateTestClient().AlivenessTest("/")
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log(ret)
+	}
+}

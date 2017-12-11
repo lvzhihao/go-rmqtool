@@ -162,3 +162,39 @@ func TestPermissions(t *testing.T) {
 		GenerateTestClient().DeleteUser("test")
 	}
 }
+
+func TestGlobalParameter(t *testing.T) {
+	list, err := GenerateTestClient().ListGlobalParameters()
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log("GlobalParameters List: ", list)
+	}
+}
+
+func TestParameter(t *testing.T) {
+	//  only if the federation plugin is enabled
+	return
+	err := GenerateTestClient().CreateParameter(
+		"federation",
+		"/",
+		"testname",
+		map[string]interface{}{
+			"vhost":     "/",
+			"component": "federation",
+			"name":      "testname",
+			"value":     "guest",
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log("Create Parameters Success")
+	}
+	list, err := GenerateTestClient().ListParameters("", "")
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log("Parameters List: ", list)
+	}
+}

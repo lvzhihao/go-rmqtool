@@ -174,3 +174,33 @@ func (c *APIClient) DeletePermission(vhost, user string) error {
 func APIDeletePermission(api, user, passwd, vhost, username string) error {
 	return NewAPIClient(api, user, passwd).DeletePermission(vhost, username)
 }
+
+func (c *APIClient) ListParameters(component, vhost string) ([]map[string]interface{}, error) {
+	if component != "" && vhost != "" {
+		return c.readSlice([]string{"parameters", component, vhost})
+	} else if component != "" {
+		return c.readSlice([]string{"parameters", component})
+	} else {
+		return c.readSlice([]string{"parameters"})
+	}
+}
+
+func APIListParameters(api, user, passwd, component, vhost string) ([]map[string]interface{}, error) {
+	return NewAPIClient(api, user, passwd).ListParameters(component, vhost)
+}
+
+func (c *APIClient) CreateParameter(component, vhost, name string, data map[string]interface{}) error {
+	return c.create([]string{"parameters", component, vhost, name}, data)
+}
+
+func APICreateParameter(api, user, passwd, component, vhost, pname string, data map[string]interface{}) error {
+	return NewAPIClient(api, user, passwd).CreateParameter(component, vhost, pname, data)
+}
+
+func (c *APIClient) ListGlobalParameters() ([]map[string]interface{}, error) {
+	return c.readSlice("global-parameters")
+}
+
+func APIListGlobalParameters(api, user, passwd string) ([]map[string]interface{}, error) {
+	return NewAPIClient(api, user, passwd).ListGlobalParameters()
+}

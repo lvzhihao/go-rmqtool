@@ -75,3 +75,32 @@ func TestAPIExchangePublish(t *testing.T) {
 		t.Log("Publish Success: ", ret)
 	}
 }
+
+func TestAPIExchangeBindings(t *testing.T) {
+	name, err := GenerateTestClient().ExchangeCreateBinding("/", "amq.topic", "amq.direct", "aaab", map[string]interface{}{
+		"abcdefg": "xx",
+	})
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log("Binding Key Success: ", name)
+	}
+	ret, err := GenerateTestClient().ExchangeBindings("/", "amq.topic", "amq.direct")
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log("Bindings List: ", ret)
+		obj, err := GenerateTestClient().ExchangeBinding("/", "amq.topic", "amq.direct", ret[0]["properties_key"].(string))
+		if err != nil {
+			t.Fatal(err)
+		} else {
+			t.Log(obj)
+			err = GenerateTestClient().ExchangeDeleteBinding("/", "amq.topic", "amq.direct", obj["properties_key"].(string))
+			if err != nil {
+				t.Fatal(err)
+			} else {
+				t.Log("Delete Binding Success: ", obj)
+			}
+		}
+	}
+}

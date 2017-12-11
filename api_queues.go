@@ -110,7 +110,6 @@ func (c *APIClient) QueueCreateExchangeBinding(vhost, exchange, name, key string
 	} else {
 		return "", fmt.Errorf("API Response Status Error: %d, %v", resp.StatusCode, resp)
 	}
-
 }
 
 func APIQueueCreateExchangeBinding(api, user, passwd, vhost, exchange, name, key string, args map[string]interface{}) (string, error) {

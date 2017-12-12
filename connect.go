@@ -1,6 +1,7 @@
 package rmqtool
 
 import (
+	"crypto/tls"
 	"fmt"
 
 	"github.com/streadway/amqp"
@@ -57,12 +58,134 @@ func (c *Connect) Clone() *Connect {
 	}
 }
 
+func (c *Connect) APIClient() *APIClient {
+	return NewAPIClient(c.Api(), c.User(), c.Passwd())
+}
+
 func (c *Connect) Dial() (*amqp.Connection, error) {
 	return amqp.Dial(c.Scheme())
 }
 
-func (c *Connect) CreateExchange(exchange string) error {
-	return APICreateExchange(c.Api(), c.User(), c.Passwd(), c.Vhost(), exchange, nil)
+func (c *Connect) DialConfig(config amqp.Config) (*amqp.Connection, error) {
+	return amqp.DialConfig(c.Scheme(), config)
+}
+
+func (c *Connect) DialTLS(config *tls.Config) (*amqp.Connection, error) {
+	return amqp.DialTLS(c.Scheme(), config)
+}
+
+func (c *Connect) QuickCreateExchange(name, kind string, durable bool) error {
+	conn, err := c.Dial()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	channel, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer channel.Close()
+	return channel.ExchangeDeclare(name, kind, durable, false, false, false, nil)
+}
+
+func (c *Connect) QuickDeleteExchange(name string) error {
+	conn, err := c.Dial()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	channel, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer channel.Close()
+	return channel.ExchangeDelete(name, true, false) //no force
+}
+
+func (c *Connect) QuickExchangeBind(destination, key, source string) error {
+	conn, err := c.Dial()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	channel, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer channel.Close()
+	return channel.ExchangeBind(destination, key, source, false, nil)
+}
+
+func (c *Connect) QuickExchangeUnbind(destination, key, source string) error {
+	conn, err := c.Dial()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	channel, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer channel.Close()
+	return channel.ExchangeUnbind(destination, key, source, false, nil)
+}
+
+func (c *Connect) QuickCreateQueue(name string, durable bool) error {
+	conn, err := c.Dial()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	channel, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer channel.Close()
+	_, err = channel.QueueDeclare(name, durable, false, false, false, nil)
+	return err
+}
+
+func (c *Connect) QuickDeleteQueue(name string) error {
+	conn, err := c.Dial()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	channel, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer channel.Close()
+	_, err = channel.QueueDelete(name, true, true, false)
+	return err
+}
+
+func (c *Connect) QuickQueueBind(name, key, exchange string, args amqp.Table) error {
+	conn, err := c.Dial()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	channel, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer channel.Close()
+	return channel.QueueBind(name, key, exchange, false, args)
+}
+
+func (c *Connect) QuickQueueUnbind(name, key, exchange string, args amqp.Table) error {
+	conn, err := c.Dial()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	channel, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer channel.Close()
+	return channel.QueueUnbind(name, key, exchange, args)
 }
 
 func (c *Connect) ApplyQueue(name string) *Queue {

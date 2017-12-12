@@ -3,7 +3,6 @@ package rmqtool
 import (
 	"time"
 
-	"github.com/lvzhihao/goutils"
 	"github.com/streadway/amqp"
 )
 
@@ -108,7 +107,7 @@ BreakFor:
 		case msg := <-c.Channel:
 			switch msg.(type) {
 			case string:
-				if goutils.ToString(msg) == "quit" {
+				if msg.(string) == "quit" {
 					Log.Info("Channel Connection Quit", c.routeKey)
 					conn.Close()
 					return

@@ -4,7 +4,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lvzhihao/goutils"
 	"github.com/streadway/amqp"
 )
 
@@ -16,7 +15,6 @@ var (
 func GenerateConsumerName(name string) string {
 	return strings.Join([]string{
 		name,
-		goutils.RandStr(20),
 		time.Now().Format(time.RFC3339),
 	}, ".")
 }
@@ -27,6 +25,7 @@ type ConsumerTool struct {
 	name      string
 	RetryTime time.Duration
 	isClosed  bool
+	//todo tmux.sync
 }
 
 func NewConsumerTool(url string) (*ConsumerTool, error) {

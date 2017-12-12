@@ -16,6 +16,6 @@ func TestAPIClientCheck(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	} else {
-		t.Log("Http Api Check Success")
+		t.Log("Http Self Check Success")
 	}
 }

@@ -10,9 +10,9 @@ type QueueConfig struct {
 }
 
 type QueueBind struct {
-	Exchange  string                 `yaml:"exchange"`
-	Key       string                 `yaml:"key"`
-	Arguments map[string]interface{} `yaml:"arguments"`
+	Exchange  string     `yaml:"exchange"`
+	Key       string     `yaml:"key"`
+	Arguments amqp.Table `yaml:"arguments"`
 }
 
 type Queue struct {
@@ -72,40 +72,32 @@ func (c *Queue) Ensure(bindList []*QueueBind) error {
 	if err != nil {
 		return err
 	} else {
-		return c.Bind(bindList)
+		return c.Binds(bindList)
 	}
 }
 
 func (c *Queue) Create() error {
-	return APICreateQueue(
-		c.Api(),
-		c.User(),
-		c.Passwd(),
-		c.Vhost(),
-		c.Name(),
-		nil,
-	)
+	return c.conn.QuickCreateQueue(c.Name(), true)
 }
 
 func (c *Queue) Close() {
 	c.consumer.Close()
 }
 
-func (c *Queue) Bind(bindList []*QueueBind) error {
+func (c *Queue) Binds(bindList []*QueueBind) error {
 	for _, bind := range bindList {
-		_, err := APIQueueCreateExchangeBinding(
-			c.Api(),
-			c.User(),
-			c.Passwd(),
-			c.Vhost(),
-			bind.Exchange,
-			c.Name(),
-			bind.Key,
-			bind.Arguments,
-		)
+		err := c.Bind(bind)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (c *Queue) Bind(bind *QueueBind) error {
+	return c.conn.QuickQueueBind(c.Name(), bind.Key, bind.Exchange, bind.Arguments)
+}
+
+func (c *Queue) Unbind(bind *QueueBind) error {
+	return c.conn.QuickQueueUnbind(c.Name(), bind.Key, bind.Exchange, bind.Arguments)
 }

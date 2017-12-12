@@ -246,22 +246,17 @@ func (c *APIClient) delete(paths interface{}) error {
 }
 
 func (c *APIClient) Check() error {
-	_, err := c.GET("")
-	return err
-}
-
-func RegisterQueue(api, user, passwd, vhost, name, exchange string, keys []string) error {
-	err := APICreateQueue(api, user, passwd, vhost, name, nil)
+	req, err := http.NewRequest("GET", c.api, nil)
 	if err != nil {
 		return err
 	}
-	for _, key := range keys {
-		if exchange != "" && key != "" {
-			_, err := APIQueueCreateExchangeBinding(api, user, passwd, vhost, exchange, name, key, nil)
-			if err != nil {
-				return err
-			}
-		}
+	resp, err := c.Do(req)
+	if err != nil {
+		return err
 	}
-	return nil
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	} else {
+		return fmt.Errorf("API Response Status Error: %d, %v", resp.StatusCode, resp)
+	}
 }

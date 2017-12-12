@@ -4,14 +4,9 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type QueueConfig struct {
-	Name     string       `yaml:"name"`
-	Bindlist []*QueueBind `yaml:"bindlist"`
-}
-
 type QueueBind struct {
-	Exchange  string     `yaml:"exchange"`
 	Key       string     `yaml:"key"`
+	Exchange  string     `yaml:"exchange"`
 	Arguments amqp.Table `yaml:"arguments"`
 }
 
@@ -53,7 +48,7 @@ func (c *Queue) Name() string {
 }
 
 func (c *Queue) ApplyConsumer() (*ConsumerTool, error) {
-	return NewConsumerTool(c.Scheme())
+	return NewConsumerTool(c.Scheme(), c.Name())
 }
 
 func (c *Queue) Consume(prefetchCount int, handle func(amqp.Delivery)) error {
@@ -62,7 +57,7 @@ func (c *Queue) Consume(prefetchCount int, handle func(amqp.Delivery)) error {
 	if err != nil {
 		return err
 	}
-	c.consumer.Consume(c.Name(), prefetchCount, handle)
+	c.consumer.Consume(prefetchCount, handle)
 	defer c.consumer.Close()
 	return nil
 }
@@ -78,6 +73,14 @@ func (c *Queue) Ensure(bindList []*QueueBind) error {
 
 func (c *Queue) Create() error {
 	return c.conn.QuickCreateQueue(c.Name(), true)
+}
+
+func (c *Queue) Purge() error {
+	return c.conn.QuickPurgeQueue(c.Name())
+}
+
+func (c *Queue) Delete() error {
+	return c.conn.QuickDeleteQueue(c.Name())
 }
 
 func (c *Queue) Close() {

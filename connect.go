@@ -160,6 +160,21 @@ func (c *Connect) QuickDeleteQueue(name string) error {
 	return err
 }
 
+func (c *Connect) QuickPurgeQueue(name string) error {
+	conn, err := c.Dial()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	channel, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer channel.Close()
+	_, err = channel.QueuePurge(name, false)
+	return err
+}
+
 func (c *Connect) QuickQueueBind(name, key, exchange string, args amqp.Table) error {
 	conn, err := c.Dial()
 	if err != nil {

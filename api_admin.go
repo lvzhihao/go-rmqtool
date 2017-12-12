@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/binary"
+	"fmt"
 	"math/rand"
 )
 
@@ -189,12 +190,28 @@ func APIListParameters(api, user, passwd, component, vhost string) ([]map[string
 	return NewAPIClient(api, user, passwd).ListParameters(component, vhost)
 }
 
+func (c *APIClient) Parameter(component, vhost, name string) (map[string]interface{}, error) {
+	return c.readMap([]string{"parameters", component, vhost, name})
+}
+
+func APIParameter(api, user, passwd, component, vhost, pname string) (map[string]interface{}, error) {
+	return NewAPIClient(api, user, passwd).Parameter(component, vhost, pname)
+}
+
 func (c *APIClient) CreateParameter(component, vhost, name string, data map[string]interface{}) error {
 	return c.create([]string{"parameters", component, vhost, name}, data)
 }
 
 func APICreateParameter(api, user, passwd, component, vhost, pname string, data map[string]interface{}) error {
 	return NewAPIClient(api, user, passwd).CreateParameter(component, vhost, pname, data)
+}
+
+func (c *APIClient) DeleteParameter(component, vhost, name string) error {
+	return c.delete([]string{"parameters", component, vhost, name})
+}
+
+func APIDeleteParameter(api, user, passwd, component, vhost, name string) error {
+	return NewAPIClient(api, user, passwd).DeleteParameter(component, vhost, name)
 }
 
 func (c *APIClient) ListGlobalParameters() ([]map[string]interface{}, error) {
@@ -205,10 +222,104 @@ func APIListGlobalParameters(api, user, passwd string) ([]map[string]interface{}
 	return NewAPIClient(api, user, passwd).ListGlobalParameters()
 }
 
+func (c *APIClient) GlobalParameter(name string) (map[string]interface{}, error) {
+	return c.readMap([]string{"global-parameters", name})
+}
+
+func APIGlobalParameter(api, user, passwd, name string) (map[string]interface{}, error) {
+	return NewAPIClient(api, user, passwd).GlobalParameter(name)
+}
+
+func (c *APIClient) CreateGlobalParameter(name string, data map[string]interface{}) error {
+	return c.create([]string{"global-parameters", name}, data)
+}
+
+func APICreateGlobalParameter(api, user, passwd, name string, data map[string]interface{}) error {
+	return NewAPIClient(api, user, passwd).CreateGlobalParameter(name, data)
+}
+
+func (c *APIClient) DeleteGlobalParameter(name string) error {
+	return c.delete([]string{"global-parameters", name})
+}
+
+func APIDeleteGlobalParameter(api, user, passwd, name string) error {
+	return NewAPIClient(api, user, passwd).DeleteGlobalParameter(name)
+}
+
+func (c *APIClient) ListPolicies(vhost string) ([]map[string]interface{}, error) {
+	if vhost == "" {
+		return c.readSlice("policies")
+	} else {
+		return c.readSlice([]string{"policies", vhost})
+	}
+}
+
+func APIListPolicies(api, user, passwd, vhost string) ([]map[string]interface{}, error) {
+	return NewAPIClient(api, user, passwd).ListPolicies(vhost)
+}
+
+func (c *APIClient) Policy(vhost, name string) (map[string]interface{}, error) {
+	return c.readMap([]string{"policies", vhost, name})
+}
+
+func APIPolicy(api, user, passwd, vhost, name string) (map[string]interface{}, error) {
+	return NewAPIClient(api, user, passwd).Policy(vhost, name)
+}
+
+func (c *APIClient) CreatePolicy(vhost, name string, data map[string]interface{}) error {
+	return c.create([]string{"policies", vhost, name}, data)
+}
+
+func APICreatePolicy(api, user, passwd, vhost, name string, data map[string]interface{}) error {
+	return NewAPIClient(api, user, passwd).CreatePolicy(vhost, name, data)
+}
+
+func (c *APIClient) DeletePolicy(vhost, name string) error {
+	return c.delete([]string{"policies", vhost, name})
+}
+
+func APIDeletePolicy(api, user, passwd, vhost, name string) error {
+	return NewAPIClient(api, user, passwd).DeletePolicy(vhost, name)
+}
+
 func (c *APIClient) AlivenessTest(vhost string) (map[string]interface{}, error) {
 	return c.readMap([]string{"aliveness-test", vhost})
 }
 
 func APIAlivenessTest(api, user, passwd, vhost string) (map[string]interface{}, error) {
 	return NewAPIClient(api, user, passwd).AlivenessTest(vhost)
+}
+
+func (c *APIClient) HealthCheck() error {
+	return c.NodeHealthCheck("")
+}
+
+func APIHealthCheck(api, user, passwd string) error {
+	return NewAPIClient(api, user, passwd).HealthCheck()
+}
+
+func (c *APIClient) NodeHealthCheck(node string) error {
+	var data map[string]interface{}
+	var err error
+	if node == "" {
+		data, err = c.readMap([]string{"healthchecks", "node"}) //self
+	} else {
+		data, err = c.readMap([]string{"healthchecks", "node", node}) //node
+	}
+	if err != nil {
+		return err
+	}
+	if status, ok := data["status"]; !ok {
+		return fmt.Errorf("undefined error")
+	} else {
+		if status.(string) == "ok" {
+			return nil
+		} else {
+			return fmt.Errorf("%s", data["reason"])
+		}
+	}
+}
+
+func APINodeHealthCheck(api, user, passwd, node string) error {
+	return NewAPIClient(api, user, passwd).NodeHealthCheck(node)
 }

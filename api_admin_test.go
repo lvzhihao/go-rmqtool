@@ -163,15 +163,6 @@ func TestPermissions(t *testing.T) {
 	}
 }
 
-func TestGlobalParameter(t *testing.T) {
-	list, err := GenerateTestClient().ListGlobalParameters()
-	if err != nil {
-		t.Fatal(err)
-	} else {
-		t.Log("GlobalParameters List: ", list)
-	}
-}
-
 func TestParameter(t *testing.T) {
 	//  only if the federation plugin is enabled
 	return
@@ -189,13 +180,51 @@ func TestParameter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	} else {
-		t.Log("Create Parameters Success")
+		t.Log("Create Parameter Success")
 	}
 	list, err := GenerateTestClient().ListParameters("", "")
 	if err != nil {
 		t.Fatal(err)
 	} else {
 		t.Log("Parameters List: ", list)
+	}
+}
+
+func TestGlobalParameter(t *testing.T) {
+	list, err := GenerateTestClient().ListGlobalParameters()
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log("GlobalParameters List: ", list)
+	}
+	err = GenerateTestClient().CreateGlobalParameter("test", map[string]interface{}{
+		"value": "valueP",
+	})
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log("Create GlobalParameter Success")
+		p, err := GenerateTestClient().GlobalParameter("test")
+		if err != nil {
+			t.Fatal(err)
+		} else {
+			t.Log(p)
+			err := GenerateTestClient().DeleteGlobalParameter("test")
+			if err != nil {
+				t.Fatal(err)
+			} else {
+				t.Log("Delete GlobalParameter Success: ", p)
+			}
+		}
+	}
+}
+
+func TestPolicies(t *testing.T) {
+	list, err := GenerateTestClient().ListPolicies("/")
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log("Policies List: ", list)
 	}
 }
 
@@ -206,4 +235,33 @@ func TestAPIAlivenessTest(t *testing.T) {
 	} else {
 		t.Log(ret)
 	}
+	err = GenerateTestClient().CreatePolicy("/", "test", map[string]interface{}{
+		"pattern": "^amq.",
+		"definition": map[string]interface{}{
+			"message-ttl": 10,
+		},
+		"priority": 0,
+		"apply-to": "all",
+	})
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log("Create Policy Success")
+		p, err := GenerateTestClient().Policy("/", "test")
+		if err != nil {
+			t.Fatal(err)
+		} else {
+			t.Log(p)
+			err := GenerateTestClient().DeletePolicy("/", "test")
+			if err != nil {
+				t.Fatal(err)
+			} else {
+				t.Log("Delete Policy Success: ", p)
+			}
+		}
+	}
+}
+
+func TestAPIHealthCheck(t *testing.T) {
+	t.Log(GenerateTestClient().HealthCheck())
 }

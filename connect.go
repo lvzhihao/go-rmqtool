@@ -20,7 +20,7 @@ func (c *ConnectConfig) Scheme() string {
 	return fmt.Sprintf("amqp://%s:%s@%s/%s", c.User, c.Passwd, c.Host, c.Vhost)
 }
 
-func Conn(config ConnectConfig) *Connect {
+func NewConnect(config ConnectConfig) *Connect {
 	return &Connect{
 		config: config,
 	}

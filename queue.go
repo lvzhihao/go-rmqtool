@@ -4,6 +4,11 @@ import (
 	"github.com/streadway/amqp"
 )
 
+type QueueConfig struct {
+	Name     string       `yaml:"name"`
+	Bindlist []*QueueBind `yaml:"bindlist"`
+}
+
 type QueueBind struct {
 	Key       string     `yaml:"key"`
 	Exchange  string     `yaml:"exchange"`

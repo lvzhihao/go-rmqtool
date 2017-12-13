@@ -9,5 +9,6 @@ before_install:
 - docker pull rabbitmq
 - docker run -d --rm --hostname test-rabbit --name gormqtool-test-rabbit -p 16672:15672 -p 6672:5672 rabbitmq:3-management
 - docker ps -a
+- go get -u github.com/streadway/amqp
 script:
 - make test

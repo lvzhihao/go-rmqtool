@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	DefaultPublisherRetryTime time.Duration = 3 * time.Second
+	DefaultPublisherRetryTime   time.Duration = 3 * time.Second
+	DefaultPublisherChannelSize int32         = 2000
 )
 
 type PublisherTool struct {
@@ -34,7 +35,7 @@ func (c *PublisherTool) conn(url, exchange string, routeKeys []string) error {
 			amqpUrl:  url,
 			exchange: exchange,
 			routeKey: route,
-			Channel:  make(chan interface{}, 1000),
+			Channel:  make(chan interface{}, DefaultPublisherChannelSize),
 		}
 		go c.channels[route].Receive()
 	}

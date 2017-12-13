@@ -95,13 +95,15 @@ RetryConnect:
 		time.Sleep(3 * time.Second)
 		goto RetryConnect
 	}
-	err = channel.ExchangeDeclare(c.exchange, "topic", true, false, false, false, nil)
-	if err != nil {
-		Log.Error("Channel Connection Error 3", c.routeKey, err)
-		conn.Close()
-		time.Sleep(3 * time.Second)
-		goto RetryConnect
-	}
+	/*
+		err = channel.ExchangeDeclare(c.exchange, "topic", true, false, false, false, nil)
+		if err != nil {
+			Log.Error("Channel Connection Error 3", c.routeKey, err)
+			conn.Close()
+			time.Sleep(3 * time.Second)
+			goto RetryConnect
+		}
+	*/
 BreakFor:
 	for {
 		select {

@@ -85,6 +85,9 @@ RetryConnect:
 	conn, err := amqp.Dial(c.amqpUrl)
 	if err != nil {
 		Log.Error("Channel Connection Error 1", c.routeKey, err)
+		if conn != nil {
+			conn.Close()
+		}
 		time.Sleep(3 * time.Second)
 		goto RetryConnect
 	}

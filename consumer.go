@@ -55,6 +55,9 @@ func (c *ConsumerTool) Link(prefetchCount int) (<-chan amqp.Delivery, error) {
 	var err error
 	c.conn, err = amqp.Dial(c.amqpUrl)
 	if err != nil {
+		if c.conn != nil {
+			c.conn.Close()
+		}
 		return nil, err
 	}
 	channel, err := c.conn.Channel()

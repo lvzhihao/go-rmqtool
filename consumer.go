@@ -104,7 +104,7 @@ func (c *ConsumerTool) Consume(nums int, handle func(amqp.Delivery)) {
 			go c.Process(channel, GenerateConsumerName(c.name+"."+strconv.Itoa(i)), quitSingle, handle)
 		}
 		<-quitSingle
-		quitSingle = nil
+		Log.Debug("Quit...")
 		c.conn.Close()
 		Log.Debug("Consumer ReConnection After RetryTime", c.RetryTime)
 	}
@@ -117,7 +117,6 @@ func (c *ConsumerTool) Process(channel *amqp.Channel, consumerName string, quitS
 		}
 		// quit
 		if quitSingle != nil {
-			Log.Debug("Quit...")
 			quitSingle <- "quit"
 		}
 	}()

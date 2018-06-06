@@ -115,7 +115,9 @@ func (c *ConsumerTool) Process(channel *amqp.Channel, consumerName string, quitS
 			Log.Error("Consumer Handle Recover", r)
 		}
 		// retry consumer
-		if quitSingle != nil {
+		if channel != nil && quitSingle != nil {
+			go process(channel, consumerName, quitSingle, handle)
+		} else if quitSingle != nil {
 			Log.Debug("Quit...")
 			quitSingle <- "quit"
 		}

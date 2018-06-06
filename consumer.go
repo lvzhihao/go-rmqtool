@@ -117,7 +117,7 @@ func (c *ConsumerTool) Process(channel *amqp.Channel, consumerName string, quitS
 		// retry consumer
 		if channel != nil && quitSingle != nil {
 			Log.Debug("Consumer Retry...")
-			go process(channel, consumerName, quitSingle, handle)
+			go c.Process(channel, consumerName, quitSingle, handle)
 		} else if quitSingle != nil {
 			Log.Debug("Quit...")
 			quitSingle <- "quit"

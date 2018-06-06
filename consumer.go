@@ -103,15 +103,19 @@ func (c *ConsumerTool) Consume(prefetchCount int, handle func(amqp.Delivery)) {
 			Log.Error("Consumer Link Error", err)
 			continue
 		}
+		// todo prefectchCount used
 		for msg := range deliveries {
-			go func() {
-				defer func() {
-					if r := recover(); r != nil {
-						Log.Error("Consumer Recover", r)
-					}
+			/*
+				go func() {
+					defer func() {
+						if r := recover(); r != nil {
+							Log.Error("Consumer Recover", r)
+						}
+					}()
+					handle(msg)
 				}()
-				handle(msg)
-			}()
+			*/
+			handle(msg)
 		}
 		c.conn.Close()
 		Log.Debug("Consumer ReConnection After RetryTime", c.RetryTime)

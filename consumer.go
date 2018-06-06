@@ -101,7 +101,7 @@ func (c *ConsumerTool) Consume(prefetchCount int, handle func(amqp.Delivery)) {
 		}
 		quitSingle := make(chan string, prefetchCount)
 		for i := 0; i < prefetchCount; i++ {
-			c.Process(channel, GenerateConsumerName(c.name+"."+strconv.Itoa(i)), quitSingle, handle)
+			go c.Process(channel, GenerateConsumerName(c.name+"."+strconv.Itoa(i)), quitSingle, handle)
 		}
 		<-quitSingle
 		c.conn.Close()
@@ -110,24 +110,21 @@ func (c *ConsumerTool) Consume(prefetchCount int, handle func(amqp.Delivery)) {
 }
 
 func (c *ConsumerTool) Process(channel *amqp.Channel, consumerName string, quitSingle chan string, handle func(amqp.Delivery)) {
+	defer func() {
+		if r := recover(); r != nil {
+			Log.Error("Consumer Handle Recover", r)
+		}
+		// retry consumer
+		c.Process(channel, consumerName, quitSingle, handle)
+	}()
+	// consume process
 	deliveries, err := channel.Consume(c.queue, consumerName, false, false, false, false, nil)
 	if err != nil {
 		Log.Error("Consumer Link Error", err)
 		quitSingle <- "quit"
 	}
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				Log.Error("Consumer Handle Recover", r)
-				// retry consumer
-				c.Process(channel, consumerName, quitSingle, handle)
-			}
-		}()
-		// todo prefectchCount used
-		for msg := range deliveries {
-			handle(msg)
-		}
-		// retry consumer
-		c.Process(channel, consumerName, quitSingle, handle)
-	}()
+	// todo prefectchCount used
+	for msg := range deliveries {
+		handle(msg)
+	}
 }

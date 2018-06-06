@@ -116,6 +116,7 @@ func (c *ConsumerTool) Process(channel *amqp.Channel, consumerName string, quitS
 		}
 		// retry consumer
 		if quitSingle != nil {
+			Log.Debug("Quit...")
 			quitSingle <- "quit"
 		}
 	}()
@@ -124,6 +125,7 @@ func (c *ConsumerTool) Process(channel *amqp.Channel, consumerName string, quitS
 	if err != nil {
 		Log.Error("Consumer Link Error", err)
 		if quitSingle != nil {
+			Log.Debug("Quit...")
 			quitSingle <- "quit"
 		}
 		return

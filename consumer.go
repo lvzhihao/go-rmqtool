@@ -126,9 +126,11 @@ func (c *ConsumerTool) Process(channel *amqp.Channel, consumerName string, quitS
 		if quitSingle != nil {
 			quitSingle <- "quit"
 		}
+		return
 	}
 	// todo prefectchCount used
 	for msg := range deliveries {
+		// process handle
 		handle(msg)
 	}
 }

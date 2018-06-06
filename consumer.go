@@ -104,6 +104,7 @@ func (c *ConsumerTool) Consume(nums int, handle func(amqp.Delivery)) {
 			go c.Process(channel, GenerateConsumerName(c.name+"."+strconv.Itoa(i)), quitSingle, handle)
 		}
 		<-quitSingle
+		quitSingle = nil
 		c.conn.Close()
 		Log.Debug("Consumer ReConnection After RetryTime", c.RetryTime)
 	}
@@ -114,11 +115,8 @@ func (c *ConsumerTool) Process(channel *amqp.Channel, consumerName string, quitS
 		if r := recover(); r != nil {
 			Log.Error("Consumer Handle Recover", r)
 		}
-		// retry consumer
-		if channel != nil && quitSingle != nil {
-			Log.Debug("Consumer Retry...")
-			go c.Process(channel, consumerName, quitSingle, handle)
-		} else if quitSingle != nil {
+		// quit
+		if quitSingle != nil {
 			Log.Debug("Quit...")
 			quitSingle <- "quit"
 		}
@@ -127,15 +125,10 @@ func (c *ConsumerTool) Process(channel *amqp.Channel, consumerName string, quitS
 	deliveries, err := channel.Consume(c.queue, consumerName, false, false, false, false, nil)
 	if err != nil {
 		Log.Error("Consumer Link Error", err)
-		if quitSingle != nil {
-			Log.Debug("Quit...")
-			quitSingle <- "quit"
+	} else {
+		for msg := range deliveries {
+			// process handle
+			handle(msg)
 		}
-		return
-	}
-	// todo prefectchCount used
-	for msg := range deliveries {
-		// process handle
-		handle(msg)
 	}
 }

@@ -115,13 +115,17 @@ func (c *ConsumerTool) Process(channel *amqp.Channel, consumerName string, quitS
 			Log.Error("Consumer Handle Recover", r)
 		}
 		// retry consumer
-		c.Process(channel, consumerName, quitSingle, handle)
+		if quitSingle != nil {
+			quitSingle <- "quit"
+		}
 	}()
 	// consume process
 	deliveries, err := channel.Consume(c.queue, consumerName, false, false, false, false, nil)
 	if err != nil {
 		Log.Error("Consumer Link Error", err)
-		quitSingle <- "quit"
+		if quitSingle != nil {
+			quitSingle <- "quit"
+		}
 	}
 	// todo prefectchCount used
 	for msg := range deliveries {

@@ -86,7 +86,7 @@ func (c *ConsumerTool) Close() {
 	}
 }
 
-func (c *ConsumerTool) Consume(prefetchCount int, handle func(amqp.Delivery)) {
+func (c *ConsumerTool) Consume(nums int, handle func(amqp.Delivery)) {
 	defer c.Close()
 	for {
 		if c.isClosed == true {
@@ -94,13 +94,13 @@ func (c *ConsumerTool) Consume(prefetchCount int, handle func(amqp.Delivery)) {
 			break
 		}
 		time.Sleep(c.RetryTime)
-		channel, err := c.Link(prefetchCount)
+		channel, err := c.Link(20)
 		if err != nil {
 			Log.Error("Channel Link Error", err)
 			continue
 		}
-		quitSingle := make(chan string, prefetchCount)
-		for i := 0; i < prefetchCount; i++ {
+		quitSingle := make(chan string, nums)
+		for i := 0; i < nums; i++ {
 			go c.Process(channel, GenerateConsumerName(c.name+"."+strconv.Itoa(i)), quitSingle, handle)
 		}
 		<-quitSingle

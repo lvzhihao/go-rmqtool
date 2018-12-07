@@ -17,6 +17,7 @@ type PublisherTool struct {
 	RetryTime       time.Duration
 	url             string
 	exchange        string
+	safeConnMaps    *sync.Map
 	safeChannelMaps *sync.Map
 }
 
@@ -26,6 +27,7 @@ func NewPublisherTool(url, exchange string, routeKeys []string) (*PublisherTool,
 		RetryTime:       DefaultPublisherRetryTime,           //default retry
 		url:             url,
 		exchange:        exchange,
+		safeConnMaps:    new(sync.Map),
 		safeChannelMaps: new(sync.Map),
 	}
 	err := tool.conn(url, exchange, routeKeys)
@@ -67,10 +69,10 @@ func (c *PublisherTool) GetSafeChannel(route string) (*amqp.Channel, error) {
 			go conn.Close()
 			return nil, err
 		}
+		c.safeConnMaps.Store(route, conn)
 		c.safeChannelMaps.Store(route, channel)
 		return channel, nil
 	}
-
 }
 
 func (c *PublisherTool) SafePublish(route string, msg amqp.Publishing) error {
@@ -82,6 +84,10 @@ func (c *PublisherTool) SafePublish(route string, msg amqp.Publishing) error {
 		if err != nil {
 			c.safeChannelMaps.Delete(route)
 			go channel.Close()
+			if conn, ok := c.safeConnMaps.Load(route); ok {
+				c.safeConnMaps.Delete(route)
+				go conn.(*amqp.Connection).Close()
+			}
 		}
 		return err
 	}

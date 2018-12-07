@@ -80,8 +80,8 @@ func (c *PublisherTool) SafePublish(route string, msg amqp.Publishing) error {
 	} else {
 		err := channel.Publish(c.exchange, route, false, false, msg)
 		if err != nil {
-			channel.Close()
 			c.safeChannelMaps.Delete(route)
+			go channel.Close()
 		}
 		return err
 	}

@@ -1,6 +1,7 @@
 package rmqtool
 
 import (
+	"sync"
 	"time"
 
 	"github.com/streadway/amqp"
@@ -12,14 +13,20 @@ var (
 )
 
 type PublisherTool struct {
-	channels  map[string]*publishChannel
-	RetryTime time.Duration
+	channels        map[string]*publishChannel
+	RetryTime       time.Duration
+	url             string
+	exchange        string
+	safeChannelMaps *sync.Map
 }
 
 func NewPublisherTool(url, exchange string, routeKeys []string) (*PublisherTool, error) {
 	tool := &PublisherTool{
-		channels:  make(map[string]*publishChannel, 0), //channels
-		RetryTime: DefaultPublisherRetryTime,           //default retry
+		channels:        make(map[string]*publishChannel, 0), //channels
+		RetryTime:       DefaultPublisherRetryTime,           //default retry
+		url:             url,
+		exchange:        exchange,
+		safeChannelMaps: new(sync.Map),
 	}
 	err := tool.conn(url, exchange, routeKeys)
 	return tool, err
@@ -44,6 +51,40 @@ func (c *PublisherTool) conn(url, exchange string, routeKeys []string) error {
 		go c.channels[route].Receive()
 	}
 	return nil
+}
+
+func (c *PublisherTool) GetSafeChannel(route string) (*amqp.Channel, error) {
+	if channel, ok := c.safeChannelMaps.Load(route); ok {
+		return channel.(*amqp.Channel), nil
+	} else {
+		conn, err := amqp.Dial(c.url)
+		if err != nil {
+			go conn.Close()
+			return nil, err
+		}
+		channel, err := conn.Channel()
+		if err != nil {
+			go conn.Close()
+			return nil, err
+		}
+		c.safeChannelMaps.Store(route, channel)
+		return channel, nil
+	}
+
+}
+
+func (c *PublisherTool) SafePublish(route string, msg amqp.Publishing) error {
+	channel, err := c.GetSafeChannel(route)
+	if err != nil {
+		return err
+	} else {
+		err := channel.Publish(c.exchange, route, false, false, msg)
+		if err != nil {
+			channel.Close()
+			c.safeChannelMaps.Delete(route)
+		}
+		return err
+	}
 }
 
 func (c *PublisherTool) publish(route string, msg interface{}) {

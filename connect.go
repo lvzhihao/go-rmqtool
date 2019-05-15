@@ -130,7 +130,7 @@ func (c *Connect) QuickExchangeUnbind(destination, key, source string) error {
 	return channel.ExchangeUnbind(destination, key, source, false, nil)
 }
 
-func (c *Connect) QuickCreateQueue(name string, durable bool) error {
+func (c *Connect) QuickCreateQueue(name string, durable bool, args amqp.Table) error {
 	conn, err := c.Dial()
 	if err != nil {
 		return err
@@ -141,7 +141,7 @@ func (c *Connect) QuickCreateQueue(name string, durable bool) error {
 		return err
 	}
 	defer channel.Close()
-	_, err = channel.QueueDeclare(name, durable, false, false, false, nil)
+	_, err = channel.QueueDeclare(name, durable, false, false, false, args)
 	return err
 }
 
@@ -207,6 +207,14 @@ func (c *Connect) ApplyQueue(name string) *Queue {
 	return &Queue{
 		conn: c,
 		name: name,
+	}
+}
+
+func (c *Connect) ApplyQueueWithArgs(name string, args amqp.Table) *Queue {
+	return &Queue{
+		conn: c,
+		name: name,
+		args: args,
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 
 type QueueConfig struct {
 	Name     string       `yaml:"name"`
+	Args     amqp.Table   `yaml:"args"`
 	Bindlist []*QueueBind `yaml:"bindlist"`
 }
 
@@ -19,6 +20,7 @@ type Queue struct {
 	conn     *Connect
 	name     string
 	consumer *ConsumerTool
+	args     amqp.Table
 }
 
 func (c *Queue) Clone(name string) *Queue {
@@ -52,6 +54,10 @@ func (c *Queue) Name() string {
 	return c.name
 }
 
+func (c *Queue) Args() amqp.Table {
+	return c.args
+}
+
 func (c *Queue) ApplyConsumer() (*ConsumerTool, error) {
 	return NewConsumerTool(c.Scheme(), c.Name())
 }
@@ -77,7 +83,7 @@ func (c *Queue) Ensure(bindList []*QueueBind) error {
 }
 
 func (c *Queue) Create() error {
-	return c.conn.QuickCreateQueue(c.Name(), true)
+	return c.conn.QuickCreateQueue(c.Name(), true, c.Args())
 }
 
 func (c *Queue) Purge() error {
